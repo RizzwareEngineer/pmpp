@@ -1,3 +1,4 @@
+import torch
 from torch.utils.cpp_extension import load
 
 module = load(
@@ -6,15 +7,16 @@ module = load(
     verbose=True
 )
 
-def row_matmul(M: torch.Tensor, N, torch.Tensor) -> torch.Tensor:
+def row_matmul(M: torch.Tensor, N: torch.Tensor) -> torch.Tensor:
     rows, MK = M.shape
     NK, cols = N.shape
 
     assert MK == NK, "Inner dimensions mismatch."
+    K = MK = NK
 
     P = torch.zeros((rows, cols), device=M.device, dtype=M.dtype)
 
-    module.row_matmul(M, N, P, rows, K, col)
+    module.row_matmul(M, N, P, rows, K, cols)
     return P
 
 def main():
@@ -29,9 +31,8 @@ def main():
     # PyTorch's built-in matmul for reference
     P_torch = M @ N
 
-    print("Custom kernel result:\n", P_gpu)
-    print("\nPyTorch matmul result:\n", P_torch)
-    print("\nDifference:", (P_gpu - P_torch).abs().max().item())
+    assert torch.equal(P_gpu, P_torch), "Your kernel is incorrect."
+    print('Your kernel is correct.')
 
 if __name__ == "__main__":
     main()
