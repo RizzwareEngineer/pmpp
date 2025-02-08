@@ -37,7 +37,6 @@ __global__ void blur_kernel(const unsigned char *in, unsigned char *out, int w, 
     }
 }
 
-// Wrapper function callable from Python
 torch::Tensor blur(torch::Tensor input)
 {
     // Ensure tensor is on CUDA and is uint8
